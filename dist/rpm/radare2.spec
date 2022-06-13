@@ -1,22 +1,30 @@
+%global         _hardened_build 1
 %global         gituser         radareorg
-%global         gitname         radare2
-#global         commit          5a3dab0a86e1452c0bb0c13d869f95b41f50b9a9
-%global         commit          5860c3efc12d4b75e72bdce4b1d3834599620913
+%global         commit          e45c08acbff838eef559e2177a37266ad79e5c46
+%global         latest          %(/usr/bin/git ls-remote https://github.com/radareorg/radare2.git HEAD | cut -f1)
 %global         shortcommit     %(c=%{commit}; echo ${c:0:7})
+%global         commitdate      20220613
+%global         gitversion      .git%{shortcommit}
+%if "%{commit}" != "%{latest}"
+%global         commit          %(/usr/bin/git ls-remote https://github.com/radareorg/radare2.git HEAD | cut -f1)
+%global         archive         %(c=%{commit}; curl -L https://api.github.com/repos/radareorg/radare2/tarball/$c > "SOURCES/radare2-${c:0:7}.tar.gz")
+%global         shortcommit     %(c=%{commit}; echo ${c:0:7})
+%global         commitdate      %(date '+%Y%m%d')
+%global         gitversion      .git%{shortcommit}
+%endif
 
 Name:           radare2
-Version:        5.4.2
+Version:        5.7.1
 Release:        1%{?dist}
 Summary:        The %{name} reverse engineering framework
 Group:          Applications/Engineering
 License:        LGPLv3
 URL:            https://www.radare.org/
-#Source0:        http://radare.org/get/%{name}-%{version}.tar.gz
-#Source0:        http://radare.org/get/%{name}-%{version}.tar.xz
-# Source0:        https://github.com/%{gituser}/%{gitname}/archive/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
-Source0:        https://github.com/%{gituser}/%{gitname}/archive/%{commit}/%{name}-%{version}-git.tar.gz
+Source0:        https://api.github.com/repos/%{gituser}/%{name}/tarball/%{commit}/%{name}-%{shortcommit}.tar.gz
 
 
+BuildRequires:  git-core
+BuildRequires:  coreutils
 BuildRequires:  file-devel
 BuildRequires:  libzip-devel
 #BuildRequires:  capstone-devel >= 3.0.4
@@ -43,9 +51,7 @@ information.
 
 
 %prep
-#%setup -q -n %{name}-%{version}
-%setup -q -n %{gitname}-%{commit}
-
+%setup -q -n %{gituser}-%{name}-%{shortcommit}
 
 %build
 %configure --with-sysmagic --with-syszip #--with-syscapstone
@@ -70,31 +76,11 @@ cp shlr/sdb/src/libsdb.a %{buildroot}/%{_libdir}/libsdb.a
 %license COPYING
 %{_bindir}/r*
 %{_libdir}/libr*
-%dir %{_libdir}/%{name}
-%dir %{_libdir}/%{name}/%{version}-git
-%{_libdir}/%{name}/last
-%{_libdir}/%{name}/%{version}-git/*.so
-#%{_libdir}/%{name}/%{version}-git/*.py*
-#%{_libdir}/%{name}/%{version}-git/*.lua
-#%{_libdir}/%{name}/%{version}-git/*.rb
-%{_libdir}/%{name}/%{version}-git/hud
-%{_libdir}/%{name}/%{version}-git/syscall
-%{_libdir}/%{name}/%{version}-git/opcodes
-%dir %{_prefix}/lib/%{name}
-%dir %{_prefix}/lib/%{name}/%{version}-git
-%dir %{_prefix}/lib/%{name}/%{version}-git/magic
-%{_prefix}/lib/%{name}/%{version}-git/magic/*
-%{_mandir}/man1/r*.1.*
-%dir %{_datadir}/%{name}
-%dir %{_datadir}/%{name}/%{version}-git
-%dir %{_datadir}/%{name}/%{version}-git/cons
-%{_datadir}/%{name}/%{version}-git/cons/*
-%dir %{_datadir}/%{name}/%{version}-git/format
-%{_datadir}/%{name}/%{version}-git/format/*
-%dir %{_prefix}/%{name}/%{version}-git/r2pm
-%{_prefix}/%{name}/%{version}-git/r2pm/*
-%dir %{_datadir}/%{name}/%{version}-git/www
-%{_datadir}/%{name}/%{version}-git/www/*
+%{_libdir}/*.a
+%{_libdir}/%{name}/*
+%{_mandir}/*
+%{_datadir}/%{name}/*
+%{_docdir}/%{name}/*
 
 
 %files devel
@@ -107,7 +93,10 @@ cp shlr/sdb/src/libsdb.a %{buildroot}/%{_libdir}/libsdb.a
 
 
 %changelog
-* Sun Sep 20 2021 pancake <pancake@nopcode.org> 5.4.2
+* Mon Jun 13 2022 Juha Nikkanen <nikkej@gmail.com> - 5.7.1
+- Updated.
+
+* Mon Sep 20 2021 pancake <pancake@nopcode.org> 5.4.2
 - update for latest centos8 and r2 codebase
 
 * Sat Oct 10 2020 pancake <pancake@nopcode.org> 5.1.0
@@ -118,4 +107,3 @@ cp shlr/sdb/src/libsdb.a %{buildroot}/%{_libdir}/libsdb.a
 
 * Sun Nov 09 2014 Pavel Odvody <podvody@redhat.com> 0.9.8rc3-0
 - Initial tito package
-
