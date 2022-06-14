@@ -1,21 +1,22 @@
 %global         _hardened_build 1
 %global         gituser         radareorg
+%global         gitname         radare2
 %global         commit          e45c08acbff838eef559e2177a37266ad79e5c46
-%global         latest          %(/usr/bin/git ls-remote https://github.com/radareorg/radare2.git HEAD | cut -f1)
+%global         latest          %(/usr/bin/git ls-remote https://github.com/radareorg/radare2.git HEAD | /usr/bin/cut -f1)
 %global         shortcommit     %(c=%{commit}; echo ${c:0:7})
 %global         commitdate      20220613
 %global         gitversion      .git%{shortcommit}
 %if "%{commit}" != "%{latest}"
-%global         commit          %(/usr/bin/git ls-remote https://github.com/radareorg/radare2.git HEAD | cut -f1)
-%global         archive         %(c=%{commit}; curl -L https://api.github.com/repos/radareorg/radare2/tarball/$c > "SOURCES/radare2-${c:0:7}.tar.gz")
+%global         commit          %(/usr/bin/git ls-remote https://github.com/radareorg/radare2.git HEAD | /usr/bin/cut -f1)
+%global         archive         %(c=%{commit}; /usr/bin/curl -L https://api.github.com/repos/radareorg/radare2/tarball/$c > "SOURCES/radare2-${c:0:7}.tar.gz")
 %global         shortcommit     %(c=%{commit}; echo ${c:0:7})
-%global         commitdate      %(date '+%Y%m%d')
+%global         commitdate      %(/usr/bin/date '+%Y%m%d')
 %global         gitversion      .git%{shortcommit}
 %endif
 
-Name:           radare2
-Version:        5.7.1
-Release:        1%{?dist}
+Name:           %{gitname}
+Version:        %{commitdate}
+Release:        1%{gitversion}
 Summary:        The %{name} reverse engineering framework
 Group:          Applications/Engineering
 License:        LGPLv3
@@ -25,6 +26,7 @@ Source0:        https://api.github.com/repos/%{gituser}/%{name}/tarball/%{commit
 
 BuildRequires:  git-core
 BuildRequires:  coreutils
+BuildRequires:  curl
 BuildRequires:  file-devel
 BuildRequires:  libzip-devel
 #BuildRequires:  capstone-devel >= 3.0.4
@@ -93,6 +95,9 @@ cp shlr/sdb/src/libsdb.a %{buildroot}/%{_libdir}/libsdb.a
 
 
 %changelog
+* Tue Jun 14 2022 Juha Nikkanen <nikkej@gmail.com> - gitcc6c574
+- Made a pure git src rpm spec, i.e. no static references to any version
+
 * Mon Jun 13 2022 Juha Nikkanen <nikkej@gmail.com> - 5.7.1
 - Updated.
 
