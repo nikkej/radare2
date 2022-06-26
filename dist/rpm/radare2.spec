@@ -95,6 +95,9 @@ cp shlr/sdb/src/libsdb.a %{buildroot}/%{_libdir}/libsdb.a
 
 
 %changelog
+* Mon Jun 20 2022 Juha Nikkanen <nikkej@gmail.com> - git43eb022
+- Introduced macro modifyspec where commit hash of HEAD is changed if needed
+
 * Tue Jun 14 2022 Juha Nikkanen <nikkej@gmail.com> - gitcc6c574
 - Made a pure git src rpm spec, i.e. no static references to any version
 
