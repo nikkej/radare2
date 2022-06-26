@@ -1,18 +1,17 @@
-%global         _hardened_build 1
 %global         gituser         radareorg
 %global         gitname         radare2
-%global         commit          e45c08acbff838eef559e2177a37266ad79e5c46
-%global         latest          %(/usr/bin/git ls-remote https://github.com/radareorg/radare2.git HEAD | /usr/bin/cut -f1)
-%global         shortcommit     %(c=%{commit}; echo ${c:0:7})
-%global         commitdate      20220613
-%global         gitversion      .git%{shortcommit}
+%global         commit          0360057781ee3f3b37af04409eac570a969deca6
+%global         latest          %(curl -s https://api.github.com/repos/radareorg/radare2/commits/HEAD | grep -E '^  "sha"' | cut -d '"' -f4)
+%global         commitdate      %(date '+%Y%m%d')
 %if "%{commit}" != "%{latest}"
-%global         commit          %(/usr/bin/git ls-remote https://github.com/radareorg/radare2.git HEAD | /usr/bin/cut -f1)
-%global         archive         %(c=%{commit}; /usr/bin/curl -L https://api.github.com/repos/radareorg/radare2/tarball/$c > "SOURCES/radare2-${c:0:7}.tar.gz")
-%global         shortcommit     %(c=%{commit}; echo ${c:0:7})
-%global         commitdate      %(/usr/bin/date '+%Y%m%d')
-%global         gitversion      .git%{shortcommit}
+# It is radical to modify spec file but this seems to work on user installed rpmbuild and
+# Fedora fc35 mock. How about other distros?
+%global         modifyspec      %(c=%{commit}; l=%{latest}; wd=%{_specdir}; while IFS='' read -r line; do echo "${line//$c/$l}"; done < "$wd/radare2.spec" > "$wd/radare2.spec.tmp"; rm -f %{SOURCE0}; mv -f "$wd/radare2.spec.tmp" "$wd/radare2.spec";)
+%global         commit          %{latest}
+%global         archive         %(c=%{commit}; wd=%{_topdir}; curl -s -L https://api.github.com/repos/radareorg/radare2/tarball/$c > "$wd/SOURCES/radare2-${c:0:7}.tar.gz")
 %endif
+%global         shortcommit     %(c=%{commit}; echo ${c:0:7})
+%global         gitversion      .git%{shortcommit}
 
 Name:           %{gitname}
 Version:        %{commitdate}
@@ -21,12 +20,13 @@ Summary:        The %{name} reverse engineering framework
 Group:          Applications/Engineering
 License:        LGPLv3
 URL:            https://www.radare.org/
-Source0:        https://api.github.com/repos/%{gituser}/%{name}/tarball/%{commit}/%{name}-%{shortcommit}.tar.gz
+Source0:        https://api.github.com/repos/%{gituser}/%{gitname}/tarball/%{commit}/%{gitname}-%{shortcommit}.tar.gz
 
 
+BuildRequires:  gcc
+BuildRequires:  make
 BuildRequires:  git-core
 BuildRequires:  coreutils
-BuildRequires:  curl
 BuildRequires:  file-devel
 BuildRequires:  libzip-devel
 #BuildRequires:  capstone-devel >= 3.0.4
