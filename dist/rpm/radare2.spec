@@ -1,6 +1,6 @@
 %global         gituser         radareorg
 %global         gitname         radare2
-%global         commit          0360057781ee3f3b37af04409eac570a969deca6
+%global         commit          f2aa7ee73a8df8c3fe5d7cd0aca1d218f760ff97
 %global         latest          %(curl -s https://api.github.com/repos/radareorg/radare2/commits/HEAD | grep -E '^  "sha"' | cut -d '"' -f4)
 %global         commitdate      %(date '+%Y%m%d')
 %if "%{commit}" != "%{latest}"
@@ -12,9 +12,10 @@
 %endif
 %global         shortcommit     %(c=%{commit}; echo ${c:0:7})
 %global         gitversion      .git%{shortcommit}
+%global         latesttag       %(curl -s https://api.github.com/repos/radareorg/radare2/tags | grep -oP '(?<=")[0-9]\.[0-9]\.[0-9](?=")' | sort -n | tail -1)
 
 Name:           %{gitname}
-Version:        %{commitdate}
+Version:        %{latesttag}
 Release:        1%{gitversion}
 Summary:        The %{name} reverse engineering framework
 Group:          Applications/Engineering
@@ -29,7 +30,6 @@ BuildRequires:  git-core
 BuildRequires:  coreutils
 BuildRequires:  file-devel
 BuildRequires:  libzip-devel
-#BuildRequires:  capstone-devel >= 3.0.4
 
 #Assume more versions installed in paraller side-by-side
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
@@ -78,7 +78,6 @@ cp shlr/sdb/src/libsdb.a %{buildroot}/%{_libdir}/libsdb.a
 %license COPYING
 %{_bindir}/r*
 %{_libdir}/libr*
-%{_libdir}/*.a
 %{_libdir}/%{name}/*
 %{_mandir}/*
 %{_datadir}/%{name}/*
@@ -87,7 +86,7 @@ cp shlr/sdb/src/libsdb.a %{buildroot}/%{_libdir}/libsdb.a
 
 %files devel
 %{_includedir}/libr
-%{_libdir}/libsdb.a
+%{_libdir}/*.a
 %{_libdir}/pkgconfig/*.pc
 
 %post -n %{name}-devel -p /sbin/ldconfig
@@ -95,6 +94,9 @@ cp shlr/sdb/src/libsdb.a %{buildroot}/%{_libdir}/libsdb.a
 
 
 %changelog
+* Fri Jul 01 2022 Juha Nikkanen <nikkej@gmail.com> - gitf2aa7ee
+- Introduced macro latesttag wich fetch version tag from remote git
+
 * Mon Jun 20 2022 Juha Nikkanen <nikkej@gmail.com> - git43eb022
 - Introduced macro modifyspec where commit hash of HEAD is changed if needed
 
